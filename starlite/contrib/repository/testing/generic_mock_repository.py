@@ -73,8 +73,8 @@ class GenericMockRepository(AbstractRepository[ModelT], Generic[ModelT]):
         now = now or self._now()
         if self._model_has_updated:
             data.updated = now  # type:ignore[attr-defined]
-        if self._model_has_updated and do_created:
-            data.created = now  # type:ignore[attr-defined]
+            if do_created:
+                data.created = now  # type:ignore[attr-defined]
         return data
 
     async def add(self, data: ModelT) -> ModelT:

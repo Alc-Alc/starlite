@@ -60,7 +60,7 @@ class FirstController(Controller):
         assert socket
         assert isinstance(first, int)
         assert isinstance(second, dict)
-        assert third is False
+        assert not third
         await socket.close()
 
 
@@ -78,19 +78,19 @@ def test_controller_dependency_injection() -> None:
 
 def test_function_dependency_injection() -> None:
     @websocket(
-        path=test_path + "/{path_param:str}",
-        dependencies={
-            "first": Provide(local_method_first_dependency),
-            "third": Provide(local_method_second_dependency),
-        },
-    )
+            path=test_path + "/{path_param:str}",
+            dependencies={
+                "first": Provide(local_method_first_dependency),
+                "third": Provide(local_method_second_dependency),
+            },
+        )
     async def test_function(socket: WebSocket, first: int, second: bool, third: str) -> None:
         await socket.accept()
         assert socket
         msg = await socket.receive_json()
         assert msg
         assert isinstance(first, int)
-        assert second is False
+        assert not second
         assert isinstance(third, str)
         await socket.close()
 

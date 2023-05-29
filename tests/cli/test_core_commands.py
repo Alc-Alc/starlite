@@ -47,7 +47,7 @@ def test_run_command(
     args = ["run"]
 
     if custom_app_file:
-        args[0:0] = ["--app", f"{custom_app_file.stem}:app"]
+        args[:0] = ["--app", f"{custom_app_file.stem}:app"]
 
     if reload:
         if set_in_env:
@@ -73,14 +73,13 @@ def test_run_command(
     else:
         host = "127.0.0.1"
 
-    if web_concurrency is not None:
-        if set_in_env:
-            monkeypatch.setenv("WEB_CONCURRENCY", str(web_concurrency))
-        else:
-            args.extend(["--web-concurrency", str(web_concurrency)])
-    else:
+    if web_concurrency is None:
         web_concurrency = 1
 
+    elif set_in_env:
+        monkeypatch.setenv("WEB_CONCURRENCY", str(web_concurrency))
+    else:
+        args.extend(["--web-concurrency", str(web_concurrency)])
     path = create_app_file(custom_app_file or "app.py")
 
     result = runner.invoke(cli_command, args)

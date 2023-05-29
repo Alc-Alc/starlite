@@ -91,7 +91,7 @@ def test_default_expiration(mock: MagicMock, frozen_datetime: "FrozenDateTimeFac
 @pytest.mark.parametrize("sync_to_thread", (True, False))
 async def test_custom_cache_key(sync_to_thread: bool, anyio_backend: str, mock: MagicMock) -> None:
     def custom_cache_key_builder(request: Request) -> str:
-        return request.url.path + ":::cached"
+        return f"{request.url.path}:::cached"
 
     @get("/cached", sync_to_thread=sync_to_thread, cache=True, cache_key_builder=custom_cache_key_builder)
     async def handler() -> str:

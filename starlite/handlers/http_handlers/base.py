@@ -294,10 +294,14 @@ class HTTPRouteHandler(BaseRouteHandler["HTTPRouteHandler"]):
         Returns:
             The default :class:`Response <.response.Response>` class for the route handler.
         """
-        for layer in list(reversed(self.ownership_layers)):
-            if layer.response_class is not None:
-                return layer.response_class
-        return Response
+        return next(
+            (
+                layer.response_class
+                for layer in list(reversed(self.ownership_layers))
+                if layer.response_class is not None
+            ),
+            Response,
+        )
 
     def resolve_response_headers(self) -> frozenset[ResponseHeader]:
         """Return all header parameters in the scope of the handler function.
@@ -312,14 +316,14 @@ class HTTPRouteHandler(BaseRouteHandler["HTTPRouteHandler"]):
                 if isinstance(layer_response_headers, Mapping):
                     # this can't happen unless you manually set response_headers on an instance, which would result in a
                     # type-checking error on everything but the controller. We cover this case nevertheless
-                    resolved_response_headers.update(
-                        {name: ResponseHeader(name=name, value=value) for name, value in layer_response_headers.items()}
-                    )
+                    resolved_response_headers |= {
+                        name: ResponseHeader(name=name, value=value)
+                        for name, value in layer_response_headers.items()
+                    }
                 else:
                     resolved_response_headers.update({h.name: h for h in layer_response_headers})
             for extra_header in ("cache_control", "etag"):
-                header_model: Header | None = getattr(layer, extra_header, None)
-                if header_model:
+                if header_model := getattr(layer, extra_header, None):
                     resolved_response_headers[header_model.HEADER_NAME] = ResponseHeader(
                         name=header_model.HEADER_NAME,
                         value=header_model.to_header(),

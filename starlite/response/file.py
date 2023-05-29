@@ -174,9 +174,7 @@ class FileResponse(StreamingResponse):
             Returns the value of :attr:`stat_result.st_size <os.stat_result.st_size>` to populate the ``Content-Length``
                 header.
         """
-        if isinstance(self.file_info, dict):
-            return self.file_info["size"]
-        return 0
+        return self.file_info["size"] if isinstance(self.file_info, dict) else 0
 
     async def send_body(self, send: "Send", receive: "Receive") -> None:
         """Emit a stream of events correlating with the response body.

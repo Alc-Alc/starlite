@@ -129,9 +129,7 @@ class SQLAlchemyPlugin(InitPluginProtocol, SerializationPluginProtocol[Declarati
         Returns:
             An appropriate numerical type
         """
-        if column_type.asdecimal:
-            return Decimal
-        return float
+        return Decimal if column_type.asdecimal else float
 
     def handle_list_type(self, column_type: sqlalchemy_type.ARRAY) -> Any:
         """Handle the SQLAlchemy Array type.

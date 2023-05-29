@@ -121,10 +121,10 @@ class BaseRouteHandler(Generic[T]):
         Returns:
             Name of the handler function
         """
-        fn = getattr(self, "fn", None)
-        if not fn:
+        if fn := getattr(self, "fn", None):
+            return get_name(unwrap_partial(self.fn.value))
+        else:
             raise ImproperlyConfiguredException("cannot access handler name before setting the handler function")
-        return get_name(unwrap_partial(self.fn.value))
 
     @property
     def dependency_name_set(self) -> set[str]:
@@ -160,7 +160,7 @@ class BaseRouteHandler(Generic[T]):
 
             for layer in self.ownership_layers:
                 if type_encoders := getattr(layer, "type_encoders", None):
-                    self._resolved_type_encoders.update(type_encoders)
+                    self._resolved_type_encoders |= type_encoders
         return cast("TypeEncodersMap", self._resolved_type_encoders)
 
     def resolve_layered_parameters(self) -> dict[str, SignatureField]:
@@ -169,7 +169,7 @@ class BaseRouteHandler(Generic[T]):
             parameter_kwargs: dict[str, ParameterKwarg] = {}
 
             for layer in self.ownership_layers:
-                parameter_kwargs.update(getattr(layer, "parameters", {}) or {})
+                parameter_kwargs |= (getattr(layer, "parameters", {}) or {})
 
             self._resolved_layered_parameters = {
                 key: SignatureField.create(
@@ -224,7 +224,7 @@ class BaseRouteHandler(Generic[T]):
         """
         resolved_exception_handlers: dict[int | type[Exception], ExceptionHandler] = {}
         for layer in self.ownership_layers:
-            resolved_exception_handlers.update(layer.exception_handlers or {})
+            resolved_exception_handlers |= (layer.exception_handlers or {})
         return resolved_exception_handlers
 
     def resolve_opts(self) -> None:
@@ -236,7 +236,7 @@ class BaseRouteHandler(Generic[T]):
 
         opt: dict[str, Any] = {}
         for layer in self.ownership_layers:
-            opt.update(layer.opt or {})
+            opt |= (layer.opt or {})
 
         self.opt = opt
 
@@ -249,7 +249,7 @@ class BaseRouteHandler(Generic[T]):
         if self._resolved_layered_parameters is Empty:
             ns: dict[str, Any] = {}
             for layer in self.ownership_layers:
-                ns.update(layer.signature_namespace)
+                ns |= layer.signature_namespace
 
             self._resolved_signature_namespace = ns
         return cast("dict[str, Any]", self._resolved_signature_namespace)

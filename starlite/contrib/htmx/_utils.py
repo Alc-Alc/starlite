@@ -62,7 +62,6 @@ class HTMXHeaders(str, Enum):
 
 def get_trigger_event_headers(trigger_event: TriggerEventType) -> dict[str, Any]:
     """Return headers for trigger event response."""
-    params = trigger_event["params"] or {}
     after_params: dict[EventAfterType, str] = {
         "receive": HTMXHeaders.TRIGGER_EVENT.value,
         "settle": HTMXHeaders.TRIGGER_AFTER_SETTLE.value,
@@ -70,6 +69,7 @@ def get_trigger_event_headers(trigger_event: TriggerEventType) -> dict[str, Any]
     }
 
     if trigger_header := after_params.get(trigger_event["after"]):
+        params = trigger_event["params"] or {}
         return {trigger_header: encode_json({trigger_event["name"]: params}).decode()}
 
     raise ImproperlyConfiguredException(
@@ -100,9 +100,7 @@ def get_replace_url_header(url: PushUrlType) -> dict[str, Any]:
 
 def get_refresh_header(refresh: bool) -> dict[str, Any]:
     """Return headers for client refresh response."""
-    value = ""
-    if refresh:
-        value = "true"
+    value = "true" if refresh else ""
     return {HTMXHeaders.REFRESH.value: value}
 
 
@@ -118,13 +116,10 @@ def get_retarget_header(target: str) -> dict[str, Any]:
 
 def get_location_headers(location: LocationType) -> dict[str, Any]:
     """Return headers for redirect without page-reload response."""
-    spec: dict[str, Any] = {}
-    for key, value in location.items():
-        if value:
-            spec[key] = value
-    if not spec:
+    if spec := {key: value for key, value in location.items() if value}:
+        return {HTMXHeaders.LOCATION.value: encode_json(spec).decode()}
+    else:
         raise ValueError("redirect_to is required parameter.")
-    return {HTMXHeaders.LOCATION.value: encode_json(spec).decode()}
 
 
 def get_headers(hx_headers: HtmxHeaderType) -> dict[str, Any]:
@@ -148,9 +143,8 @@ def get_headers(hx_headers: HtmxHeaderType) -> dict[str, Any]:
     value: Any
     for key, value in hx_headers.items():
         if key in ["redirect", "refresh", "location", "replace_url"]:
-            response = htmx_headers_dict[key](value)
-            return response
+            return htmx_headers_dict[key](value)
         if value is not None:
             response = htmx_headers_dict[key](value)
-            header.update(response)
+            header |= response
     return header

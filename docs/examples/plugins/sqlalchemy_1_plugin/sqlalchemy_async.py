@@ -55,10 +55,10 @@ async def get_company(company_id: int, async_session: AsyncSession) -> Company:
     If a company with that ID does not exist, return a 404 response
     """
     result = await async_session.scalars(select(Company).where(Company.id == company_id))
-    company: Optional[Company] = result.one_or_none()
-    if not company:
+    if company := result.one_or_none():
+        return company
+    else:
         raise HTTPException(detail=f"Company with ID {company_id} not found", status_code=HTTP_404_NOT_FOUND)
-    return company
 
 
 app = Starlite(

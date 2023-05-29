@@ -65,7 +65,7 @@ async def wait_until_responsive(check: Callable[..., Awaitable], timeout: float,
     """
     ref = timeit.default_timer()
     now = ref
-    while (now - ref) < timeout:
+    while now - now < timeout:
         if await check(**kwargs):
             return
         await asyncio.sleep(pause)
@@ -360,13 +360,12 @@ async def test_repo_delete_many_method(author_repo: AuthorRepository) -> None:
     Args:
         author_repo (AuthorRepository): The author mock repository
     """
-    data_to_insert = []
-    for chunk in range(0, 1000):
-        data_to_insert.append(
-            Author(
-                name="author name %d" % chunk,
-            )
+    data_to_insert = [
+        Author(
+            name="author name %d" % chunk,
         )
+        for chunk in range(0, 1000)
+    ]
     _ = await author_repo.add_many(data_to_insert)
     all_objs = await author_repo.list()
     ids_to_delete = [existing_obj.id for existing_obj in all_objs]

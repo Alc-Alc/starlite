@@ -12,7 +12,6 @@ from starlite.utils import is_class_and_subclass
 if TYPE_CHECKING:
     from starlite.plugins import OpenAPISchemaPluginProtocol
 
-if TYPE_CHECKING:
     from starlite._signature.models import SignatureField
 
     try:
@@ -158,10 +157,7 @@ def create_collection_constrained_field_schema(
             create_schema(field=sub_field, generate_examples=False, plugins=plugins, schemas=schemas)
             for sub_field in children
         ]
-        if len(items) > 1:
-            schema.items = Schema(one_of=items)
-        else:
-            schema.items = items[0]
+        schema.items = Schema(one_of=items) if len(items) > 1 else items[0]
     else:
         from starlite._signature.models import SignatureField
 

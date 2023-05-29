@@ -46,10 +46,12 @@ def get_user(user_id: int, db_session: Session) -> User:
 
     If a user with that ID does not exist, return a 404 response
     """
-    user: Optional[User] = db_session.scalars(select(User).where(User.id == user_id)).one_or_none()
-    if not user:
+    if user := db_session.scalars(
+        select(User).where(User.id == user_id)
+    ).one_or_none():
+        return user
+    else:
         raise HTTPException(detail=f"User with ID {user} not found", status_code=HTTP_404_NOT_FOUND)
-    return user
 
 
 app = Starlite(

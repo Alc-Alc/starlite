@@ -58,7 +58,7 @@ def test_dto_factory(model: Any, exclude: list, field_mapping: dict, field_defin
     )
     assert issubclass(dto, BaseModel)
     assert dto.__name__ == "MyDTO"
-    assert not any(excluded_key in dto.__fields__ for excluded_key in exclude)
+    assert all(excluded_key not in dto.__fields__ for excluded_key in exclude)
     assert all(remapped_key in dto.__fields__ for remapped_key in field_mapping.values())
     special = dto.__fields__["special"]
     assert not special.allow_none

@@ -209,13 +209,12 @@ class MutableScopeHeaders(MutableMapping):
         """Set a header in the scope, overwriting duplicates."""
         name_encoded = key.lower().encode("latin-1")
         value_encoded = value.encode("latin-1")
-        indices = self._find_indices(key)
-        if not indices:
-            self.headers.append((name_encoded, value_encoded))
-        else:
+        if indices := self._find_indices(key):
             for i in indices[1:]:
                 del self.headers[i]
             self.headers[indices[0]] = (name_encoded, value_encoded)
+        else:
+            self.headers.append((name_encoded, value_encoded))
 
     def __delitem__(self, key: str) -> None:
         """Delete all headers matching ``name``"""
@@ -307,12 +306,15 @@ class CacheControlHeader(Header):
     def _get_header_value(self) -> str:
         """Get the header value as string."""
 
-        cc_items = []
-        for key, value in self.dict(
-            exclude_unset=True, exclude_none=True, by_alias=True, exclude={"documentation_only"}
-        ).items():
-            cc_items.append(key if isinstance(value, bool) else f"{key}={value}")
-
+        cc_items = [
+            key if isinstance(value, bool) else f"{key}={value}"
+            for key, value in self.dict(
+                exclude_unset=True,
+                exclude_none=True,
+                by_alias=True,
+                exclude={"documentation_only"},
+            ).items()
+        ]
         return ", ".join(cc_items)
 
     @classmethod
@@ -361,9 +363,7 @@ class ETag(Header):
 
     def _get_header_value(self) -> str:
         value = f'"{self.value}"'
-        if self.weak:
-            return f"W/{value}"
-        return value
+        return f"W/{value}" if self.weak else value
 
     @classmethod
     def from_header(cls, header_value: str) -> "ETag":

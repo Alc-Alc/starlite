@@ -177,7 +177,7 @@ class SQLAlchemyRepository(AbstractRepository[ModelT], Generic[ModelT]):
 
         """
         existing = await self.count(**kwargs)
-        return bool(existing > 0)
+        return existing > 0
 
     async def get(self, item_id: Any, **kwargs: Any) -> ModelT:
         """Get instance identified by `item_id`.

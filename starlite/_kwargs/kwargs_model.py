@@ -453,8 +453,11 @@ class KwargsModel:
                     f"Make sure to use distinct keys for your dependencies, path parameters and aliased parameters."
                 )
 
-        used_reserved_kwargs = {*parameter_names, *path_parameters, *dependency_keys}.intersection(RESERVED_KWARGS)
-        if used_reserved_kwargs:
+        if used_reserved_kwargs := {
+            *parameter_names,
+            *path_parameters,
+            *dependency_keys,
+        }.intersection(RESERVED_KWARGS):
             raise ImproperlyConfiguredException(
                 f"Reserved kwargs ({', '.join(RESERVED_KWARGS)}) cannot be used for dependencies and parameter arguments. "
                 f"The following kwargs have been used: {', '.join(used_reserved_kwargs)}"

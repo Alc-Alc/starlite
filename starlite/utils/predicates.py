@@ -252,7 +252,7 @@ def is_pydantic_model_class(annotation: Any) -> "TypeGuard[Type[BaseModel]]":  #
     return False  # pragma: no cover
 
 
-def is_pydantic_model_instance(annotation: Any) -> "TypeGuard[BaseModel]":  # pyright: ignore
+def is_pydantic_model_instance(annotation: Any) -> "TypeGuard[BaseModel]":    # pyright: ignore
     """Given a type annotation determine if the annotation is an instance of pydantic's BaseModel.
 
     Args:
@@ -261,6 +261,4 @@ def is_pydantic_model_instance(annotation: Any) -> "TypeGuard[BaseModel]":  # py
     Returns:
         A typeguard determining whether the type is :data:`BaseModel pydantic.BaseModel>`.
     """
-    if BaseModel is not Empty:  # type: ignore[comparison-overlap]
-        return isinstance(annotation, BaseModel)
-    return False  # pragma: no cover
+    return isinstance(annotation, BaseModel) if BaseModel is not Empty else False

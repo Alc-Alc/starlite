@@ -87,15 +87,14 @@ class Partial(Generic[T]):
         Args:
             item: A pydantic model class.
         """
-        field_definitions: Dict[str, Tuple[Any, None]] = {}
-        for field_name, field_type in get_type_hints(item).items():
-            if is_classvar(field_type):
-                continue
-            if not isinstance(field_type, GenericAlias) or NoneType not in field_type.__args__:
-                field_definitions[field_name] = (Optional[field_type], None)
-            else:
-                field_definitions[field_name] = (field_type, None)
-
+        field_definitions: Dict[str, Tuple[Any, None]] = {
+            field_name: (Optional[field_type], None)
+            if not isinstance(field_type, GenericAlias)
+            or NoneType not in field_type.__args__
+            else (field_type, None)
+            for field_name, field_type in get_type_hints(item).items()
+            if not is_classvar(field_type)
+        }
         cls._models[item] = create_model(cls._create_partial_type_name(item), __base__=item, **field_definitions)  # type: ignore
 
     @classmethod

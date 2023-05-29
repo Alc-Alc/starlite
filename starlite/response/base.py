@@ -93,10 +93,11 @@ class Response(Generic[T]):
         )
         self.is_head_response = is_head_response
         self.media_type = get_enum_string_value(media_type)
-        self.status_allows_body = not (
-            status_code in {HTTP_204_NO_CONTENT, HTTP_304_NOT_MODIFIED} or status_code < HTTP_200_OK
-        )
         self.status_code = status_code
+        self.status_allows_body = (
+            status_code not in {HTTP_204_NO_CONTENT, HTTP_304_NOT_MODIFIED}
+            and status_code >= HTTP_200_OK
+        )
         self._enc_hook = self.get_serializer(type_encoders)
 
         if not self.status_allows_body or is_head_response:
@@ -119,8 +120,7 @@ class Response(Generic[T]):
     def get_serializer(cls, type_encoders: TypeEncodersMap | None = None) -> Serializer:
         """Get the serializer for this response class."""
 
-        type_encoders = {**(cls.type_encoders or {}), **(type_encoders or {})}
-        if type_encoders:
+        if type_encoders := {**(cls.type_encoders or {}), **(type_encoders or {})}:
             return partial(default_serializer, type_encoders={**DEFAULT_TYPE_ENCODERS, **type_encoders})
 
         return default_serializer
@@ -241,11 +241,7 @@ class Response(Generic[T]):
         """
         try:
             if self.media_type.startswith("text/"):
-                if not content:
-                    return b""
-
-                return content.encode(self.encoding)  # type: ignore
-
+                return b"" if not content else content.encode(self.encoding)
             if self.media_type == MediaType.MESSAGEPACK:
                 return encode_msgpack(content, self._enc_hook)
 
@@ -261,9 +257,7 @@ class Response(Generic[T]):
             The content length of the body (e.g. for use in a ``Content-Length`` header).
             If the response does not have a body, this value is ``None``
         """
-        if self.status_allows_body:
-            return len(self.body)
-        return 0
+        return len(self.body) if self.status_allows_body else 0
 
     def encode_headers(self) -> list[tuple[bytes, bytes]]:
         """Encode the response headers as a list of byte tuples.

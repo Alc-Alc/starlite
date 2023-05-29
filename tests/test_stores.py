@@ -122,7 +122,7 @@ async def test_delete_all(store: Store) -> None:
 
     await store.delete_all()
 
-    assert not any([await store.get(key) for key in keys])
+    assert not any(await store.get(key) for key in keys)
 
 
 async def test_expires_in(store: Store) -> None:
@@ -132,7 +132,7 @@ async def test_expires_in(store: Store) -> None:
     assert await store.expires_in("foo") == -1
 
     await store.set("foo", "bar", expires_in=10)
-    assert math.ceil(await store.expires_in("foo") / 10) * 10 == 10  # type: ignore[operator]
+    assert math.ceil(await store.expires_in("foo") / 10) == 1
 
 
 @patch("starlite.stores.redis.Redis")
@@ -173,7 +173,7 @@ async def test_redis_delete_all(redis_store: RedisStore) -> None:
 
     await redis_store.delete_all()
 
-    assert not any([await redis_store.get(key) for key in keys])
+    assert not any(await redis_store.get(key) for key in keys)
     assert await redis_store._redis.get("test_key") == b"test_value"  # check it doesn't delete other values
 
 
@@ -221,7 +221,7 @@ def test_file_with_namespace(file_store: FileStore) -> None:
 @pytest.mark.parametrize("invalid_char", string.punctuation)
 def test_file_with_namespace_invalid_namespace_char(file_store: FileStore, invalid_char: str) -> None:
     with pytest.raises(ValueError):
-        file_store.with_namespace("foo" + invalid_char)
+        file_store.with_namespace(f"foo{invalid_char}")
 
 
 @pytest.fixture(params=["redis_store", "file_store"])
@@ -275,8 +275,8 @@ async def test_memory_delete_expired(store_fixture: str, request: FixtureRequest
     await anyio.sleep(0.002)
     await store.delete_expired()
 
-    assert not any([await store.exists(key) for key in expect_expired])
-    assert all([await store.exists(key) for key in expect_not_expired])
+    assert not any(await store.exists(key) for key in expect_expired)
+    assert all(await store.exists(key) for key in expect_not_expired)
 
 
 def test_registry_get(memory_store: MemoryStore) -> None:

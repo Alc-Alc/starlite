@@ -158,7 +158,7 @@ def test_websocket_send_and_receive_text() -> None:
         websocket = WebSocket[Any, Any, Any](scope, receive=receive, send=send)
         await websocket.accept()
         data = await websocket.receive_text()
-        await websocket.send_text("Message was: " + data)
+        await websocket.send_text(f"Message was: {data}")
         await websocket.close()
 
     with TestClient(app).websocket_connect("/") as websocket:

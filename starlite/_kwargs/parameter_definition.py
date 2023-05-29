@@ -60,7 +60,9 @@ def create_parameter_definition(
         field_alias=field_alias,
         default_value=default_value,
         is_required=signature_field.is_required
-        and (default_value is None and not (signature_field.is_optional or signature_field.is_any)),
+        and default_value is None
+        and not signature_field.is_optional
+        and not signature_field.is_any,
         is_sequence=signature_field.is_non_string_sequence,
     )
 

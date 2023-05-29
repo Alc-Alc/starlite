@@ -42,10 +42,11 @@ class AllowedHostsMiddleware(AbstractMiddleware):
         self.allowed_hosts_regex = re.compile("|".join(sorted(allowed_hosts)))  # pyright: ignore
 
         if config.www_redirect:
-            redirect_domains: set[str] = {
-                host.replace("www.", "") for host in config.allowed_hosts if host.startswith("www.")
-            }
-            if redirect_domains:
+            if redirect_domains := {
+                host.replace("www.", "")
+                for host in config.allowed_hosts
+                if host.startswith("www.")
+            }:
                 self.redirect_domains = re.compile("|".join(sorted(redirect_domains)))  # pyright: ignore
 
     async def __call__(self, scope: "Scope", receive: "Receive", send: "Send") -> None:
@@ -64,16 +65,16 @@ class AllowedHostsMiddleware(AbstractMiddleware):
             return
 
         headers = MutableScopeHeaders(scope=scope)
-        host = headers.get("host", headers.get("x-forwarded-host", "")).split(":")[0]
-
-        if host:
+        if host := headers.get("host", headers.get("x-forwarded-host", "")).split(
+            ":"
+        )[0]:
             if self.allowed_hosts_regex.fullmatch(host):
                 await self.app(scope, receive, send)
                 return
 
             if self.redirect_domains is not None and self.redirect_domains.fullmatch(host):
                 url = URL.from_scope(scope)
-                redirect_url = url.with_replacements(netloc="www." + url.netloc)
+                redirect_url = url.with_replacements(netloc=f"www.{url.netloc}")
                 await RedirectResponse(url=str(redirect_url))(scope, receive, send)
                 return
 
