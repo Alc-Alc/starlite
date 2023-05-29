@@ -291,13 +291,12 @@ async def test_repo_delete_many_method(author_repo: AuthorRepository) -> None:
     Args:
         author_repo (AuthorRepository): The author mock repository
     """
-    data_to_insert = []
-    for chunk in range(0, 1000):
-        data_to_insert.append(
-            Author(
-                name="author name %d" % chunk,
-            )
+    data_to_insert = [
+        Author(
+            name="author name %d" % chunk,
         )
+        for chunk in range(0, 1000)
+    ]
     _ = await author_repo.add_many(data_to_insert)
     all_objs = await author_repo.list()
     ids_to_delete = [existing_obj.id for existing_obj in all_objs]

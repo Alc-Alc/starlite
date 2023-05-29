@@ -29,9 +29,7 @@ class AModel:
         self.name = name
 
     def __eq__(self, __o: object) -> bool:
-        if isinstance(__o, type(self)):
-            return __o.name == self.name
-        return False
+        return __o.name == self.name if isinstance(__o, type(self)) else False
 
 
 class APydanticModel(BaseModel):

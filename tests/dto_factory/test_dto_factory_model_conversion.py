@@ -42,11 +42,11 @@ def test_conversion_to_model_instance(model: Any, exclude: list, field_mapping: 
     for key in dto_instance.__fields__:  # type: ignore
         if key not in MyDTO.dto_field_mapping:
             attribute_value = _get_attribute_value(model_instance, key)
-            assert attribute_value == dto_instance.__getattribute__(key)  # type: ignore
         else:
             original_key = MyDTO.dto_field_mapping[key]
             attribute_value = _get_attribute_value(model_instance, original_key)
-            assert attribute_value == dto_instance.__getattribute__(key)  # type: ignore
+
+        assert attribute_value == dto_instance.__getattribute__(key)  # type: ignore
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="dataclasses behave differently in lower versions")

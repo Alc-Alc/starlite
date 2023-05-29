@@ -93,10 +93,7 @@ def create_data_handler(
         )
         response.raw_headers = raw_headers
 
-        if after_request:
-            return await after_request(response)  # type: ignore
-
-        return response
+        return await after_request(response) if after_request else response
 
     async def handler(data: Any, plugins: list["SerializationPluginProtocol"], **kwargs: Any) -> "ASGIApp":
         if isawaitable(data):
@@ -111,7 +108,11 @@ def create_data_handler(
                 dto_type(**datum) if isinstance(datum, dict) else dto_type.from_model_instance(datum) for datum in data
             ]
 
-        elif plugins and not (is_dto_annotation or is_dto_iterable_annotation):
+        elif (
+            plugins
+            and not is_dto_annotation
+            and not is_dto_iterable_annotation
+        ):
             data = await normalize_response_data(data=data, plugins=plugins)
 
         return await create_response(data=data)

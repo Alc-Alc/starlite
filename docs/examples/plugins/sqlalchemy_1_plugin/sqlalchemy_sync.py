@@ -50,10 +50,12 @@ def get_company(company_id: str, db_session: Session) -> Company:
 
     If a company with that ID does not exist, return a 404 response
     """
-    company: Optional[Company] = db_session.scalars(select(Company).where(Company.id == company_id)).one_or_none()
-    if not company:
+    if company := db_session.scalars(
+        select(Company).where(Company.id == company_id)
+    ).one_or_none():
+        return company
+    else:
         raise HTTPException(detail=f"Company with ID {company_id} not found", status_code=HTTP_404_NOT_FOUND)
-    return company
 
 
 app = Starlite(

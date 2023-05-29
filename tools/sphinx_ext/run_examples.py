@@ -117,7 +117,7 @@ def exec_examples(app_file: Path, run_configs: list[list[str]]) -> str:
                 logger.error(f"Example: {app_file}:{args} yielded no results")
                 continue
 
-            result = "\n".join(line for line in ("> " + (" ".join(clean_args)), *stdout))
+            result = "\n".join(("> " + (" ".join(clean_args)), *stdout))
             results.append(result)
 
     return "\n".join(results)
@@ -141,7 +141,7 @@ class LiteralInclude(LiteralIncludeOverride):
 
         tmp_file = self.env.tmp_examples_path / str(file.relative_to(docs_dir)).replace("/", "_")
 
-        self.arguments[0] = "/" + str(tmp_file.relative_to(docs_dir))
+        self.arguments[0] = f"/{str(tmp_file.relative_to(docs_dir))}"
         tmp_file.write_text(clean_content)
 
         nodes = super().run()

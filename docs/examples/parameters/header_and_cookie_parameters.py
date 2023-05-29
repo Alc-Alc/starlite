@@ -26,7 +26,7 @@ async def get_user(
     token: str = Parameter(header="X-API-KEY"),
     cookie: str = Parameter(cookie="my-cookie-param"),
 ) -> User:
-    if not (token == VALID_TOKEN and cookie == VALID_COOKIE_VALUE):
+    if token != VALID_TOKEN or cookie != VALID_COOKIE_VALUE:
         raise NotAuthorizedException
     return User.parse_obj(USER_DB[user_id])
 
